@@ -193,8 +193,6 @@ class APIRequest(object):
         if extra_params != "":
             request_url += "&" + extra_params
 
-        print(('hello {}'.format(request_url)))
-
         return request_url
 
     def get_request(self, method, request_params={}):

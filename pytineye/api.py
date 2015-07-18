@@ -242,9 +242,6 @@ class TinEyeAPIRequest(object):
             else:
                 filename = image_file[0]
                 request_string, boundary = self.request.post_request(method, filename, params)
-
-                print(('request_string: {}'.format(request_string)))
-
                 response = self.http.request_encode_body(
                     'POST', request_string,
                     fields={'image_upload': image_file},
