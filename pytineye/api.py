@@ -9,12 +9,12 @@ Copyright (c) 2015 Idée Inc. All rights reserved worldwide.
 """
 
 from datetime import datetime
-import httplib
+import http.client
 import simplejson
 import time
 
-from api_request import APIRequest
-from exceptions import TinEyeAPIError
+from .api_request import APIRequest
+from .exceptions import TinEyeAPIError
 
 import urllib3
 
@@ -242,6 +242,9 @@ class TinEyeAPIRequest(object):
             else:
                 filename = image_file[0]
                 request_string, boundary = self.request.post_request(method, filename, params)
+
+                print(('request_string: {}'.format(request_string)))
+
                 response = self.http.request_encode_body(
                     'POST', request_string,
                     fields={'image_upload': image_file},
@@ -249,13 +252,13 @@ class TinEyeAPIRequest(object):
             # Parse the JSON into a Python object
             obj = simplejson.loads(response.data)
 
-        except simplejson.decoder.JSONDecodeError, e:
+        except simplejson.decoder.JSONDecodeError as e:
             raise TinEyeAPIError("500", ["Could not decode JSON: %s" % e])
-        except Exception, e:
+        except Exception as e:
             raise e
 
         # Check the result of the API call
-        if response.status != httplib.OK or obj.get('code') != httplib.OK:
+        if response.status != http.client.OK or obj.get('code') != http.client.OK:
             raise TinEyeAPIError(obj['code'], obj.get('messages'))
 
         return obj

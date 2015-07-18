@@ -10,10 +10,10 @@ Copyright (c) 2015 Idée Inc. All rights reserved worldwide.
 """
 
 import hmac
-import mimetools
+import string
 import sys
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 # Standard hashlib only available after Python 2.5 (inclusive)
 if sys.version_info < (2, 5):
@@ -22,7 +22,7 @@ else:
     from hashlib import sha1 as sha
 
 from Crypto.Random import random
-from exceptions import APIRequestError
+from .exceptions import APIRequestError
 
 
 class APIRequest(object):
@@ -102,7 +102,7 @@ class APIRequest(object):
         param_str = self._sort_params(request_params=request_params)
         request_url = '%s%s/' % (self.api_url, method)
         to_sign = self.private_key + http_verb + content_type + \
-            urllib.quote_plus(filename).lower() + \
+            urllib.parse.quote_plus(filename).lower() + \
             str(date) + nonce + request_url + param_str
 
         return self._generate_hmac_signature(to_sign)
@@ -117,7 +117,7 @@ class APIRequest(object):
         """
 
         signature = ""
-        signature = hmac.new(self.private_key, to_sign, sha)
+        signature = hmac.new(self.private_key.encode(), to_sign.encode(), sha)
 
         return signature.hexdigest()
 
@@ -137,7 +137,7 @@ class APIRequest(object):
         unsorted_params = {}
 
         special_keys = ["api_key", "api_sig", "date", "nonce", "image_upload"]
-        for key in request_params.keys():
+        for key in list(request_params.keys()):
             lc_key = key.lower()
             # Sort the parameters if they are not part of the following list
             if lc_key not in special_keys:
@@ -145,7 +145,7 @@ class APIRequest(object):
                 if lc_key == "image_url":
                     value = request_params[key]
                     if "%" not in value:
-                        value = urllib.quote_plus(value, "~")
+                        value = urllib.parse.quote_plus(value, "~")
                     unsorted_params[lc_key] = value
                     if lowercase:
                         unsorted_params[lc_key] = value.lower()
@@ -193,6 +193,8 @@ class APIRequest(object):
         if extra_params != "":
             request_url += "&" + extra_params
 
+        print(('hello {}'.format(request_url)))
+
         return request_url
 
     def get_request(self, method, request_params={}):
@@ -234,7 +236,8 @@ class APIRequest(object):
 
         # Have to generate a boundary, nonce, and date to use in generating a POST
         # request signature
-        boundary = mimetools.choose_boundary()
+        boundary = ''.join(
+            random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
         nonce = self._generate_nonce()
         date = int(time.time())
 
