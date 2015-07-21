@@ -29,13 +29,17 @@ class TinEyeResponse(object):
     - `total_results`, total number of results.
     """
 
-    def __init__(self, matches, total_results=None):
+    def __init__(self, matches, total_results=None, json_results=None):
         self.matches = matches
         self.total_results = total_results or 0
+        self.json_results = json_results
 
     def __repr__(self):
         return '%s(matches="%s", total_results=%s)' % \
             (self.__class__.__name__, self.matches, self.total_results)
+
+    def get_json_results(self):
+        return self.json_results
 
     @staticmethod
     def _from_dict(result_json):
@@ -60,7 +64,7 @@ class TinEyeResponse(object):
                     matches.append(match)
         total_results = results.get('total_results')
 
-        return TinEyeResponse(matches=matches, total_results=total_results)
+        return TinEyeResponse(matches=matches, total_results=total_results, json_results=result_json)
 
 
 class Match(object):
@@ -246,6 +250,7 @@ class TinEyeAPIRequest(object):
                     'POST', request_string,
                     fields={'image_upload': image_file},
                     multipart_boundary=boundary)
+
             # Parse the JSON into a Python object
             obj = simplejson.loads(response.data)
 
