@@ -189,7 +189,7 @@ class TestTinEyeAPIRequest(unittest.TestCase):
         self.assertTrue(response.total_results > 1000)
 
         # Test search_data with sandbox
-        filename = "images/meloncat.jpg"
+        filename = "test/images/meloncat.jpg"
         data = ""
         with open(filename, 'rb') as fp:
             data = fp.read()
